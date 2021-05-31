@@ -18,17 +18,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<RawPhoneEvent> _rawEvents;
-  List<PhoneCallEvent> _phoneEvents;
+  late List<RawPhoneEvent?> _rawEvents;
+  late List<PhoneCallEvent> _phoneEvents;
 
   /// The result of the user typing
-  String _phoneNumber;
+  String? _phoneNumber;
 
   @override
   void initState() {
     super.initState();
     _phoneEvents = _accumulate(FlutterPhoneState.phoneCallEvents);
-    _rawEvents = _accumulate(FlutterPhoneState.rawPhoneEvents);
+    _rawEvents = _accumulate(FlutterPhoneState.rawPhoneEvents!);
   }
 
   List<R> _accumulate<R>(Stream<R> input) {
@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
                     ]),
                     for (final event in _rawEvents)
                       TableRow(children: [
-                        _cell(truncate(event.id, 8)),
+                        _cell(truncate(event!.id, 8)),
                         _cell(event.phoneNumber),
                         _cell(value(event.type)),
                       ]),
@@ -135,34 +135,35 @@ class _MyAppState extends State<MyApp> {
   _initiateCall() {
     if (_phoneNumber?.isNotEmpty == true) {
       setState(() {
-        FlutterPhoneState.startPhoneCall(_phoneNumber);
+        FlutterPhoneState.startPhoneCall(_phoneNumber!);
       });
     }
   }
 }
 
 class _CallCard extends StatelessWidget {
-  final PhoneCall phoneCall;
+  final PhoneCall? phoneCall;
 
-  const _CallCard({Key key, this.phoneCall}) : super(key: key);
+  const _CallCard({Key? key, this.phoneCall}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
           dense: true,
-          leading: Icon(
-              phoneCall.isOutbound ? Icons.arrow_upward : Icons.arrow_downward),
+          leading: Icon(phoneCall!.isOutbound
+              ? Icons.arrow_upward
+              : Icons.arrow_downward),
           title: Text(
-            "+${phoneCall.phoneNumber ?? "Unknown number"}: ${value(phoneCall.status)}",
+            "+${phoneCall!.phoneNumber ?? "Unknown number"}: ${value(phoneCall!.status)}",
             overflow: TextOverflow.visible,
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (phoneCall.id?.isNotEmpty == true)
-                Text("id: ${truncate(phoneCall.id, 12)}"),
-              for (final event in phoneCall.events)
+              if (phoneCall!.id.isNotEmpty == true)
+                Text("id: ${truncate(phoneCall!.id, 12)}"),
+              for (final event in phoneCall!.events)
                 Text(
                   "- ${value(event.status) ?? "-"}",
                   maxLines: 1,
@@ -172,12 +173,12 @@ class _CallCard extends StatelessWidget {
           trailing: FutureBuilder<PhoneCall>(
             builder: (context, snap) {
               if (snap.hasData && snap.data?.isComplete == true) {
-                return Text("${phoneCall.duration?.inSeconds ?? '?'}s");
+                return Text("${phoneCall!.duration?.inSeconds ?? '?'}s");
               } else {
                 return CircularProgressIndicator();
               }
             },
-            future: Future.value(phoneCall.done),
+            future: Future.value(phoneCall!.done),
           )),
     );
   }
